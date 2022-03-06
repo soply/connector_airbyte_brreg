@@ -1,0 +1,9 @@
+dist
+build
+*.egg-info
+*.pyc
+sample_files/state.json
+.venv
+*__pycache__*
+test_updates.py
+
