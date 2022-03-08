@@ -1,4 +1,4 @@
-# Airbyte Connector to Brønnøyregistry Updates 
+# Airbyte Connector to Brønnøysundregistrene Updates 
 
 ## Local environment
 
