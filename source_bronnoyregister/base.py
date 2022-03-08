@@ -116,7 +116,10 @@ class IncrementalBronnoyregisterBaseUpdateStream(BronnoyregisterBaseUpdateStream
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        if len(stream_state.keys()) == 0:
+        if len(stream_state.keys()) == 0 or next_page_token is not None:
+            # This branch is entered in two cases:
+            # 1) stream_state is empty, which is the case for the first run
+            # 2) next_page_token is null, which is the first batch of data within each cycle.
             params = super().request_params(stream_state, stream_slice, next_page_token)
         else:
             params = {
