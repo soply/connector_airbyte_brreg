@@ -1,6 +1,6 @@
 {
-    "batch_size": 10,
-    "start_date": "2022-03-01",
+    "batch_size": 1500,
+    "start_date": "2022-06-15",
     "max_entries": -1,
     "include_objects": false
 }

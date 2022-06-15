@@ -1,9 +1,10 @@
 import requests
 import math
+import asyncio
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from airbyte_cdk.sources.streams.http import HttpStream
-
+from source_bronnoyregister.async_get_helper import get_all
 
 # Basic full refresh stream
 class BronnoyregisterBaseUpdateStream(HttpStream, ABC):
@@ -72,16 +73,21 @@ class BronnoyregisterBaseUpdateStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.json()['page']['totalElements'] > 0 and self.include_objects:
+            updates = response.json()['_embedded'][self._get_response_key_update()]
+            # Get updated objects (using async and httpx for parallelized querying)
+            urls = [update['_links'][self._get_response_key_entry()]['href'] for update in updates]
+            objects = asyncio.run(get_all(urls))
             yield from (
                 [
                     {
                         'update_id': json_entry['oppdateringsid'],
                         'update_timestamp' : json_entry['dato'],
                         'update_detail' : json_entry,
-                        'object_detail' : requests.get(json_entry['_links'][self._get_response_key_entry()]['href']).json()
+                        'object_detail' : objects[i]
                     }
-                for json_entry in response.json()['_embedded'][self._get_response_key_update()]])
+                for i, json_entry in enumerate(updates)])
         elif response.json()['page']['totalElements'] > 0:
+            updates = response.json()['_embedded'][self._get_response_key_update()]
             yield from (
                 [
                     {
@@ -89,7 +95,7 @@ class BronnoyregisterBaseUpdateStream(HttpStream, ABC):
                         'update_timestamp' : json_entry['dato'],
                         'update_detail' : json_entry
                     }
-                for json_entry in response.json()['_embedded'][self._get_response_key_update()]])            
+                for json_entry in updates])            
         else:
             # Yield from empty list of no entries left
             yield from ([])
