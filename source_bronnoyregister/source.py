@@ -32,7 +32,7 @@ class SourceBronnoyregister(AbstractSource):
             raise RuntimeError('Batch size exceeding 10 000 is not allowed - please chose batch size below.')
         return [
                     Company(
-                        batch_size=config["batch_size"], 
-                        max_entries = config.get("max_entries")
+                        batch_size=config.get("batch_size"), 
+                        max_entries=config.get("max_entries")
                     ),
                 ]
