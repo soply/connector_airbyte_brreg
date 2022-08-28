@@ -1,6 +1,7 @@
 import requests
 import math
 import asyncio
+import datetime
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -14,12 +15,19 @@ class BronnoyregisterBaseUpdateStream(HttpStream, ABC):
     primary_key = "update_id"
 
     def __init__(self, **kwargs):
-        self.start_date = kwargs.pop("start_date") + 'T00:00:00.000Z' # Adjusting format for API
+        # To make sure we receive all updates, we fetch the latest update ids
+        # from 2 days ago. This means, after initial fetch, we fetch all 
+        # updates starting with those from 2 days ago. Ensures to receive all data
+        today = datetime.date.today() - datetime.timedelta(days=2)
+        # Datetime in BRREG format
+        self.fetch_updates_from_date = today.strftime('%Y-%m-%d') + 'T00:00:00.000Z'
         self.batch_size = kwargs.pop("batch_size")
-        self.include_objects = kwargs.pop("include_objects")
-        self.max_entries = kwargs.pop('max_entries', None)
+        self.max_entries = kwargs.pop('max_entries')
+        if self.max_entries is None:
+            # If parameter is not specified in spec we fetch all data
+            self.max_entries = -1
         self.num_entries_so_far = 0
-        self.next_id = self._get_initial_id()
+        self.start_updates_from_id = self._get_initial_id()
         super().__init__(**kwargs)
 
     @abstractmethod

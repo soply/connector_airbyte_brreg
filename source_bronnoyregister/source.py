@@ -1,6 +1,7 @@
 import requests
 
 from typing import Any, List, Mapping, Tuple
+from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from .company import Company
@@ -9,7 +10,7 @@ from .branch_office import BranchOffice
 # Source
 class SourceBronnoyregister(AbstractSource):
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
@@ -32,12 +33,10 @@ class SourceBronnoyregister(AbstractSource):
         return [
                     Company(
                         batch_size=config["batch_size"], 
-                        start_date = config["start_date"],
-                        include_objects = config['include_objects'],
-                        max_entries = config.get("max_entries", None)),
+                        max_entries = config.get("max_entries")
+                    ),
                     BranchOffice(
                         batch_size=config["batch_size"], 
-                        start_date = config["start_date"],
-                        include_objects = config['include_objects'],
-                        max_entries = config.get("max_entries", None))
+                        max_entries = config.get("max_entries")
+                    )
                 ]
