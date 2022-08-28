@@ -30,6 +30,28 @@ class BRREGBatchStream(HttpStream, ABC):
         self.num_entries_so_far = 0
         super().__init__(**kwargs)
 
+    def process_object(self, obj : Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Processes the objects to give them the same shape as update data
+
+        Parameters
+        ----------
+        obj : Mapping[str, Any]
+            Original object
+
+        Returns
+        -------
+        Mapping[str, Any]
+            Processed object
+        """
+        return {
+            "update_id" : None,
+            "update_timestamp" : None,
+            "update_detail" : None,
+            "object_detail" : obj
+        }
+
+
     @abstractmethod
     def _header_accept(self) -> str:
         """
@@ -113,7 +135,7 @@ class BRREGBatchStream(HttpStream, ABC):
         :param response:
         :return: An iterable containing the parsed response
         """
-        bbsd = BRREGBatchStreamDecoder(response)
+        bbsd = BRREGBatchStreamDecoder(response, self.process_object)
         if self.max_entries > 0:
             yield from islice(bbsd, self.max_entries)
         else:
@@ -197,7 +219,7 @@ class BRREGUpdateStream(BRREGBatchStream, ABC):
         this method. Note that these options do not conflict with request-level options such as headers, request params, etc..
 
         Custom doc: 
-
+z
         Returns
         -------
         dict
@@ -219,13 +241,13 @@ class BRREGUpdateStream(BRREGBatchStream, ABC):
         if len(stream_state.keys()) == 0 and next_page_token is None:
             # Initial fetch phase
             params = super().request_params(stream_state, stream_slice, next_page_token)
-        elif 'fetch_updates_from_date' in next_page_token.keys():
+        elif next_page_token is not None and 'fetch_updates_from_date' in next_page_token.keys():
             # Transition from intial to update fetch phase
             params = {
                 "dato": next_page_token['fetch_updates_from_date'],
                 "size": self.batch_size,
             }
-        elif 'next_id' in next_page_token.keys():
+        elif next_page_token is not None and 'next_id' in next_page_token.keys():
             # Update fetch phase - mid stream after restart happened
             params = {
                 "oppdateringsid": next_page_token['next_id'],
@@ -274,7 +296,7 @@ class BRREGUpdateStream(BRREGBatchStream, ABC):
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
-        if 'update_id' in latest_record:
+        if latest_record.get('update_id', None):
             # Update fetch phase
             return {
                     'next_id': latest_record['update_id'] + 1

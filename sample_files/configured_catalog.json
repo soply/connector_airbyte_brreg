@@ -6,7 +6,8 @@
       "stream": {
         "name": "company",
         "supported_sync_modes": [
-          "full_refresh"
+          "full_refresh",
+          "incremental"
         ],
         "json_schema": {
           "type": "company",

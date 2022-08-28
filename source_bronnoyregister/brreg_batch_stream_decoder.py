@@ -6,11 +6,12 @@ import json
 
 class BRREGBatchStreamDecoder():
 
-        def __init__(self, response: requests.Response):
+        def __init__(self, response: requests.Response, process_function):
             self._response = response
             self._byte_stream = self._response_byte_stream()
             self._current_string = None
             self._current_position = 0
+            self._process_function = process_function
 
 
         def __iter__(self):
@@ -51,7 +52,7 @@ class BRREGBatchStreamDecoder():
                             test = json.loads(self._current_string[:next_position_to_check+1])
                             self._current_string = self._current_string[next_position_to_check + 2:]
                             self._current_position = 0
-                            return test
+                            return self._process_function(test)
                         except ValueError:
                             pass
                         next_position_to_check_offset = self._current_string[self.position:].find('}')
