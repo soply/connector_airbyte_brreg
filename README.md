@@ -24,8 +24,7 @@ This will install the airbyte-cdk into your local environment.
 ```
 {
     "batch_size": 10,
-    "start_date": "2022-03-05",
-    "max_entries": 10000 (-1 for fetching all entries)
+    "max_entries": 10000
 }
 ```
 

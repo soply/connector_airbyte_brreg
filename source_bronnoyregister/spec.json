@@ -5,8 +5,6 @@
         "title": "Bronnoyregistry Connector Spec",
         "type": "object",
         "required": [
-            "batch_size",
-            "include_objects"
         ],
         "additionalProperties": false,
         "properties": {

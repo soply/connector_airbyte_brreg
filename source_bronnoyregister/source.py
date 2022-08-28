@@ -5,7 +5,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from .company import Company
-from .branch_office import BranchOffice
+
 
 # Source
 class SourceBronnoyregister(AbstractSource):
@@ -35,8 +35,4 @@ class SourceBronnoyregister(AbstractSource):
                         batch_size=config["batch_size"], 
                         max_entries = config.get("max_entries")
                     ),
-                    BranchOffice(
-                        batch_size=config["batch_size"], 
-                        max_entries = config.get("max_entries")
-                    )
                 ]
