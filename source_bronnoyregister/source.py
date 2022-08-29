@@ -4,6 +4,8 @@ from typing import Any, List, Mapping, Tuple
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+
+from .branch_office import BranchOffice
 from .company import Company
 
 
@@ -32,6 +34,10 @@ class SourceBronnoyregister(AbstractSource):
             raise RuntimeError('Batch size exceeding 10 000 is not allowed - please chose batch size below.')
         return [
                     Company(
+                        batch_size=config.get("batch_size"), 
+                        max_entries=config.get("max_entries")
+                    ),
+                    BranchOffice(
                         batch_size=config.get("batch_size"), 
                         max_entries=config.get("max_entries")
                     ),

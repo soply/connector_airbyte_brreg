@@ -2,7 +2,7 @@ from .base import BRREGUpdateStream
 from typing import Any, Mapping
 
 
-class Company(BRREGUpdateStream):
+class BranchOffice(BRREGUpdateStream):
 
     def _get_response_key_update(self) -> str:
         """ This function a keyword to access isolated objects in the 
@@ -10,10 +10,10 @@ class Company(BRREGUpdateStream):
 
         :return Key for accessing results (String)
         """
-        return 'oppdaterteEnheter'
+        return 'oppdaterteUnderenheter'
 
     def _get_response_key_entry(self) -> str:
-        return 'enhet'
+        return 'underenhet'
 
     def primary_key(self) -> str:
         return "organisasjonsnummer"
@@ -29,7 +29,7 @@ class Company(BRREGUpdateStream):
         str
             Value of "Accept" header parameter
         """
-        return "application/vnd.brreg.enhetsregisteret.enhet.v1+gzip;charset=UTF-8"
+        return "application/vnd.brreg.enhetsregisteret.underenhet.v1+gzip;charset=UTF-8"
 
     def path(
         self, 
@@ -39,7 +39,7 @@ class Company(BRREGUpdateStream):
     ) -> str:
         if len(stream_state) == 0 and next_page_token is None:
             # Initial fetch phase
-            return "enheter/lastned"
+            return "underenheter/lastned"
         else:
             # Fetch updates phase
-            return "oppdateringer/enheter"
+            return "oppdateringer/underenheter"

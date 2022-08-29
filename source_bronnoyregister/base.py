@@ -48,7 +48,7 @@ class BRREGBatchStream(HttpStream, ABC):
             "update_id" : None,
             "update_timestamp" : None,
             "update_detail" : None,
-            "object_detail" : obj
+            "object_detail" : obj,
         }
 
 
@@ -168,6 +168,76 @@ class BRREGUpdateStream(BRREGBatchStream, ABC):
         """
         return "update_id"
 
+    def get_update_id_for_date(
+        self, 
+        date : str
+    ) -> int:
+        """_summary_
+
+        Parameters
+        ----------
+        date : str
+            a date in the format 'YYYY-mm-ddT00:00:00.000Z'
+
+        Returns
+        -------
+        int
+            Update id associated with the given date. All updates from this id onwards 
+            are the same than those specified by the from date
+        """
+        # This retrieves sub url to updates
+        suburl = self.path(stream_state = {}, next_page_token={})
+        response = requests.get(self.url_base + suburl + '?dato=' + date)
+        if response.json()['page']['totalElements'] == 0:
+            return None
+        response_as_list = response.json()['_embedded'][self._get_response_key_update()]
+        return response_as_list[0]['oppdateringsid']
+
+
+    def is_response_to_initial_load(
+        self, 
+        response: requests.Response
+    ) -> bool:
+        """
+        Returns True if the request procuding the given response
+        is associated with the initial fetch and false otherwise
+
+        Parameters
+        ----------
+        response : requests.Response
+            Response from request to test
+
+        Returns
+        -------
+        bool
+            True if response is response to initial fetch, false otherwise.
+        """
+        return response.request.url.endswith(self.path(stream_state={}))
+
+    def is_in_initial_phase(
+        self,
+        stream_state: Mapping[str, Any], 
+        next_page_token: Mapping[str, Any] = None
+    ) -> bool:
+        """
+        Returns true if we are in the initial (batch) loading phase, 
+        and false if we are loading updates (after initial phase completed).
+
+        Parameters
+        ----------
+        stream_state : Mapping[str, Any]
+            Airbyte stream state
+        next_page_token : Mapping[str, Any], optional
+            Airbyte next page token, by default None
+
+        Returns
+        -------
+        bool
+            True if in initial phase, false otherwise
+        """
+        return (len(stream_state.keys()) == 0 and next_page_token is None)
+
+
     @abstractmethod
     def _get_response_key_update(self) -> str:
         """ This function a keyword to access isolated objects in the 
@@ -200,7 +270,7 @@ class BRREGUpdateStream(BRREGBatchStream, ABC):
         dict
             
         """
-        if len(stream_state.keys()) == 0 and next_page_token is None:
+        if self.is_in_initial_phase(stream_state, next_page_token):
             # Initial fetch phase
             return super().request_headers(stream_state, stream_slice, next_page_token)
         else:
@@ -225,7 +295,7 @@ z
         dict
             
         """
-        if len(stream_state.keys()) == 0 and next_page_token is None:
+        if self.is_in_initial_phase(stream_state, next_page_token):
             # Initial fetch phase
             return super().request_kwargs(stream_state, stream_slice, next_page_token)
         else:
@@ -238,15 +308,9 @@ z
         stream_slice: Mapping[str, any] = None, 
         next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        if len(stream_state.keys()) == 0 and next_page_token is None:
+        if self.is_in_initial_phase(stream_state, next_page_token):
             # Initial fetch phase
             params = super().request_params(stream_state, stream_slice, next_page_token)
-        elif next_page_token is not None and 'fetch_updates_from_date' in next_page_token.keys():
-            # Transition from intial to update fetch phase
-            params = {
-                "dato": next_page_token['fetch_updates_from_date'],
-                "size": self.batch_size,
-            }
         elif next_page_token is not None and 'next_id' in next_page_token.keys():
             # Update fetch phase - mid stream after restart happened
             params = {
@@ -275,11 +339,9 @@ z
         -------
         dict
         """
-        if response.request.url.endswith(self.path(stream_state={})):
-            # Initial fetch phase
-            return {
-                'fetch_updates_from_date' : self.fetch_updates_from_date
-            }
+        if self.is_response_to_initial_load(response):
+            # Initial fetch phase - retrieve next update if from given date.
+            return { 'next_id' : self.get_update_id_for_date(self.fetch_updates_from_date) }
         else:
             # Update fetch phase
             if response.json()['page']['totalElements'] == 0:
@@ -291,16 +353,17 @@ z
                 self.next_id = response_as_list[-1]['oppdateringsid'] + 1
                 return { "next_id" : self.next_id }
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(self, 
+        current_stream_state: MutableMapping[str, Any], 
+        latest_record: Mapping[str, Any]
+    ) -> Mapping[str, Any]:
         """
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
         if latest_record.get('update_id', None):
             # Update fetch phase
-            return {
-                    'next_id': latest_record['update_id'] + 1
-                }
+            return { 'next_id': latest_record['update_id'] + 1 }
         else:
             # Initial fetch phase                
             return {}
