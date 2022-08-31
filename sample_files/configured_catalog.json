@@ -4,6 +4,25 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "stream": {
+        "name": "company_roles",
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "json_schema": {
+          "type": "company_roles",
+          "properties": {
+            "blob": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    {
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "stream": {
         "name": "company",
         "supported_sync_modes": [
           "full_refresh",

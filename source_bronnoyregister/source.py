@@ -5,6 +5,8 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
+from source_bronnoyregister.company_roles import CompanyRoles
+
 from .branch_office import BranchOffice
 from .company import Company
 
@@ -35,10 +37,17 @@ class SourceBronnoyregister(AbstractSource):
         return [
                     Company(
                         batch_size=config.get("batch_size"), 
-                        max_entries=config.get("max_entries")
+                        max_entries=config.get("max_entries"),
+                        start_date=config.get("start_date"),
                     ),
                     BranchOffice(
                         batch_size=config.get("batch_size"), 
-                        max_entries=config.get("max_entries")
+                        max_entries=config.get("max_entries"),
+                        start_date=config.get("start_date"),
                     ),
+                    CompanyRoles(
+                        batch_size=config.get("batch_size"), 
+                        max_entries=config.get("max_entries"),
+                        start_date=config.get("start_date"),
+                    )
                 ]

@@ -37,7 +37,7 @@ class BranchOffice(BRREGUpdateStream):
         stream_slice: Mapping[str, Any] = None, 
         next_page_token: Mapping[str, Any] = None
     ) -> str:
-        if len(stream_state) == 0 and next_page_token is None:
+        if self.is_in_initial_phase(stream_state, next_page_token):
             # Initial fetch phase
             return "underenheter/lastned"
         else:

@@ -10,11 +10,18 @@
         "properties": {
             "batch_size": {
                 "type": "integer",
-                "description": "The number of responses per request when fetching updates (maximum: 10 000)"
+                "description": "The number of responses per request when fetching updates (maximum: 10 000)",
+                "order" : 1
             },
             "max_entries": {
                 "type": "integer",
-                "description": "Limit how many elements are extracted per table (used in debugging). Choose -1 for no limit."
+                "description": "Limit how many elements are extracted per table (used in debugging). Choose -1 for no limit.",
+                "order" : 2
+            },
+            "start_date": {
+                "type": "string",
+                "description": "Format YYYY-MM-DD. If set, skips initial load phase and only loads updates starting from the given date at 00:00:00 CET.",
+                "order" : 3
             }
         }
     }

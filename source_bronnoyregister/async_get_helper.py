@@ -34,8 +34,8 @@ async def get_all(urls):
     async with httpx.AsyncClient(limits = httpx.Limits(max_connections=1000, max_keepalive_connections = 200)) as client:
         tasks = [get_single(url, client) for url in urls]
         responses = await asyncio.gather(*tasks)
-    if any([response.status_code not in [200, 410]  for response in responses]):
-        import pdb
-        pdb.set_trace()
-    responses = [response.json() for response in responses]
+    if any([response.status_code not in [200, 404, 410]  for response in responses]):
+        [response.raise_for_status() for response in responses]
+    # 404 status code means the resources are not found -> we return an empty dictionary
+    responses = [response.json() if response.status_code != 404 else {} for response in responses]
     return responses

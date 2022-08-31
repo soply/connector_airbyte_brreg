@@ -4,7 +4,7 @@ import asyncio
 import datetime
 from itertools import islice
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_bronnoyregister.async_get_helper import get_all
 from source_bronnoyregister.brreg_batch_stream_decoder import BRREGBatchStreamDecoder
@@ -155,6 +155,10 @@ class BRREGUpdateStream(BRREGBatchStream, ABC):
         today = datetime.date.today() - datetime.timedelta(days=2)
         # Datetime in BRREG format
         self.fetch_updates_from_date = today.strftime('%Y-%m-%d') + 'T00:00:00.000Z'
+        self.start_date = kwargs.pop("start_date", None)
+        if self.start_date is not None:
+            # Convert to correct format
+            self.start_date = self.start_date + 'T00:00:00.000Z'
         self.batch_size = kwargs.pop("batch_size")
         super().__init__(**kwargs)
 
@@ -235,7 +239,7 @@ class BRREGUpdateStream(BRREGBatchStream, ABC):
         bool
             True if in initial phase, false otherwise
         """
-        return (len(stream_state.keys()) == 0 and next_page_token is None)
+        return (len(stream_state.keys()) == 0 and next_page_token is None and self.start_date is None)
 
 
     @abstractmethod
@@ -318,9 +322,13 @@ z
                 "size": self.batch_size,
             }
         else:
-            # Update fetch phase - restarting from saved state
+            # Update fetch phase - restarting from saved state initial start date if given
+            if self.start_date:
+                start_update_id = max(stream_state.get('next_id', -1), self.get_update_id_for_date(self.start_date))
+            else:
+                start_update_id = stream_state['next_id']
             params = {
-                "oppdateringsid": stream_state['next_id'],
+                "oppdateringsid": start_update_id,
                 "size": self.batch_size,
             }
         return params
@@ -363,7 +371,7 @@ z
         """
         if latest_record.get('update_id', None):
             # Update fetch phase
-            return { 'next_id': latest_record['update_id'] + 1 }
+            return { 'next_id': int(latest_record['update_id']) + 1 }
         else:
             # Initial fetch phase                
             return {}
