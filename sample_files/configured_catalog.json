@@ -1,6 +1,96 @@
 {
   "streams": [
     {
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "stream": {
+        "name": "role_type",
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "json_schema": {
+          "type": "role_type",
+          "properties": {
+            "blob": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    {
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "stream": {
+        "name": "role_group_type",
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "json_schema": {
+          "type": "role_group_type",
+          "properties": {
+            "blob": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    {
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "stream": {
+        "name": "representative",
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "json_schema": {
+          "type": "representative",
+          "properties": {
+            "blob": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    {
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "stream": {
+        "name": "municipality",
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "json_schema": {
+          "type": "municipality",
+          "properties": {
+            "blob": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    {
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "stream": {
+        "name": "organization_type",
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "json_schema": {
+          "type": "organization_type",
+          "properties": {
+            "blob": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    {
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "stream": {

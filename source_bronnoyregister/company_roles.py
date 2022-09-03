@@ -1,11 +1,11 @@
 import requests
 import asyncio
-from .base import BRREGUpdateStream
+from .brreg_base_decode import BRREGDecodedBatchAndUpdateStream
 from typing import Any, Mapping, MutableMapping
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from source_bronnoyregister.async_get_helper import get_all
 
-class CompanyRoles(BRREGUpdateStream):
+class CompanyRoles(BRREGDecodedBatchAndUpdateStream):
 
     def _get_response_key_update(self) -> str:
         """ This function a keyword to access isolated objects in the 

@@ -1,5 +1,4 @@
 {
     "max_entries" : 1000,
-    "batch_size": 200,
-    "start_date" : "2022-05-01"
+    "batch_size": 200
 }

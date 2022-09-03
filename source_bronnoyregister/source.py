@@ -6,9 +6,13 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
 from source_bronnoyregister.company_roles import CompanyRoles
-
-from .branch_office import BranchOffice
-from .company import Company
+from source_bronnoyregister.municipality import Municipality
+from source_bronnoyregister.organization_type import OrganizationType
+from source_bronnoyregister.branch_office import BranchOffice
+from source_bronnoyregister.company import Company
+from source_bronnoyregister.role_type import RoleType
+from source_bronnoyregister.role_group_type import RoleGroupType
+from source_bronnoyregister.representative import Representative
 
 
 # Source
@@ -49,5 +53,20 @@ class SourceBronnoyregister(AbstractSource):
                         batch_size=config.get("batch_size"), 
                         max_entries=config.get("max_entries"),
                         start_date=config.get("start_date"),
-                    )
+                    ),
+                    OrganizationType(
+                        max_entries=config.get("max_entries"),
+                    ),
+                    Municipality(
+                        max_entries=config.get("max_entries"),
+                    ),
+                    RoleType(
+                        max_entries=config.get("max_entries"),
+                    ),
+                    RoleGroupType(
+                        max_entries=config.get("max_entries"),
+                    ),
+                    Representative(
+                        max_entries=config.get("max_entries"),
+                    ),
                 ]

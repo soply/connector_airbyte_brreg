@@ -1,8 +1,8 @@
-from .base import BRREGUpdateStream
+from .brreg_base_decode import BRREGDecodedBatchAndUpdateStream
 from typing import Any, Mapping
 
 
-class BranchOffice(BRREGUpdateStream):
+class BranchOffice(BRREGDecodedBatchAndUpdateStream):
 
     def _get_response_key_update(self) -> str:
         """ This function a keyword to access isolated objects in the 
